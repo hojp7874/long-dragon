@@ -11,6 +11,7 @@ class Head(pygame.sprite.Sprite):
         self.y = y
         self.size = size
         self.rect = pygame.Rect(self.x, self.y, self.size, self.size)
+        self.image = pygame.image.load(image('head.png'))
 
     def move(self, direction, speed):
         self.x += direction[0] * speed
@@ -53,9 +54,11 @@ class Dragon(pygame.sprite.Sprite):
         self.speed = 5
         self.color = tuple(random.randint(0, 255) for _ in range(3))
         self.keys = keys
-        self.size = 20
+        self.size = 32
         self.head = Head(random.randint(0, WINDOW_WIDTH), random.randint(0, WINDOW_HEIGHT), self.size)
         self.body = deque([Body(self.head),
+                           Body(self.head),
+                           Body(self.head),
                            Body(self.head),
                            Body(self.head)])
         self.direction = random.choice(list(self.DIRECTIONS.values()))
@@ -75,10 +78,16 @@ class Dragon(pygame.sprite.Sprite):
                 self.direction = self.DIRECTIONS[direction]
 
     def eat(self):
-        self.length += 1
-        self.body.appendleft(Body(self.head))
+        self.length += 5
+        for _ in range(5):
+            self.body.append(Body(self.head))
+
+    def get_hit(self):
+        self.length -= 1
+        for _ in range(5):
+            self.body.pop()
 
     def draw(self, window):
-        pygame.draw.rect(window, self.color, self.head.rect)
         for body in self.body:
             pygame.draw.rect(window, self.color, body.rect)
+        window.blit(self.head.image, self.head.rect)

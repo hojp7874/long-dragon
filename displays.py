@@ -18,7 +18,7 @@ class Display(ABC):
     def update(self):
         self._update()
         pygame.display.flip()
-        self.clock.tick(60)
+        self.clock.tick(120)
 
     @abstractmethod
     def input(self, key): ...
@@ -31,6 +31,9 @@ class Display(ABC):
                 if event.type == pygame.QUIT:
                     self.running = False
                 if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.running = False
+                        self.next_display = MainMenu
                     self.input(event.key)
             self.update()
             pygame.display.flip()
@@ -52,7 +55,7 @@ class MainMenu(Display):
             "Quit": None
         }
         self.selected = 0
-        self.image = pygame.image.load("assets/images/bg.jpeg")
+        self.image = pygame.image.load(image("bg.jpeg"))
 
     def _update(self):
         self.window.blit(self.image, (0, 0))
@@ -115,6 +118,14 @@ class MultiPlay(Display):
             if self.food.rect.colliderect(dragon.head.rect):
                 dragon.eat()
                 self.food = Food()
+
+            other_dragons = [other for other in self.dragons if other != dragon]
+            if dragon.body[-1].rect.collidelist([other_dragon.head.rect for other_dragon in other_dragons]) != -1:
+                dragon.get_hit()
+
+            if len(dragon.body) < 3:
+                self.checkout(MainMenu)
+
         self.window.fill((0, 0, 0))
         for dragon in self.dragons:
             dragon.draw(self.window)
